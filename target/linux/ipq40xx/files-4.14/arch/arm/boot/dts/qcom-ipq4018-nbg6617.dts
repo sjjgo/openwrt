@@ -15,7 +15,6 @@
  */
 
 #include "qcom-ipq4019.dtsi"
-#include "qcom-ipq4019-bus.dtsi"
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/input/input.h>
 #include <dt-bindings/input/linux-event-codes.h>
@@ -184,7 +183,7 @@
 			output-low;
 		};
 	};
-	led_pins: led_pinmux  {
+	led_pins: led_pinmux {
 		mux {
 			pins = "gpio0", "gpio1", "gpio3", "gpio5", "gpio58";
 			drive-strength = <0x8>;
@@ -194,7 +193,7 @@
 	};
 };
 
-&spi_0 { /* BLSP1 QUP1 */
+&blsp1_spi1 { /* BLSP1 QUP1 */
 	pinctrl-0 = <&spi_0_pins>;
 	pinctrl-names = "default";
 	status = "okay";
