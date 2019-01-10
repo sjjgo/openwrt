@@ -49,6 +49,18 @@ define Build/eva-image
 	mv $@.new $@
 endef
 
+define Build/seama
+	$(STAGING_DIR_HOST)/bin/seama -i $@ \
+		-m "dev=/dev/mtdblock/$(SEAMA_MTDBLOCK)" -m "type=firmware"
+	mv $@.seama $@
+endef
+
+define Build/seama-seal
+	$(STAGING_DIR_HOST)/bin/seama -i $@ -s $@.seama \
+		-m "signature=$(SEAMA_SIGNATURE)"
+	mv $@.seama $@
+endef
+
 define Build/zyxel-ras-image
 	let \
 		newsize="$(subst k,* 1024,$(RAS_ROOTFS_SIZE))"; \
@@ -60,14 +72,6 @@ define Build/zyxel-ras-image
 			-o $@.new \
 			$(if $(findstring separate-kernel,$(word 1,$(1))),-k $(IMAGE_KERNEL)) \
 		&& mv $@.new $@
-endef
-
-define Build/mkbuffaloimg
-	$(STAGING_DIR_HOST)/bin/mkbuffaloimg -B $(BOARDNAME) \
-		-R $$(($(subst k, * 1024,$(ROOTFS_SIZE)))) \
-		-K $$(($(subst k, * 1024,$(KERNEL_SIZE)))) \
-		-i $@ -o $@.new
-	mv $@.new $@
 endef
 
 define Build/netgear-chk
@@ -96,6 +100,10 @@ define Build/append-squashfs-fakeroot-be
 		-noappend -root-owned -be -nopad -b 65536 \
 		$(if $(SOURCE_DATE_EPOCH),-fixed-time $(SOURCE_DATE_EPOCH))
 	cat $@.fakesquashfs >> $@
+endef
+
+define Build/append-string
+	echo -n $(1) >> $@
 endef
 
 # append a fake/empty uImage header, to fool bootloaders rootfs integrity check
@@ -244,6 +252,11 @@ define Build/pad-offset
 		newsize='size + pad'; \
 		dd if=$@ of=$@.new bs=$$newsize count=1 conv=sync
 	mv $@.new $@
+endef
+
+define Build/xor-image
+	$(STAGING_DIR_HOST)/bin/xorimage -i $@ -o $@.xor $(1)
+	mv $@.xor $@
 endef
 
 define Build/check-size
