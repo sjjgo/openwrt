@@ -37,7 +37,7 @@ tools-y += lzma squashfs4 zip
 tools-$(BUILD_B43_TOOLS) += b43-tools
 tools-$(BUILD_ISL) += isl
 tools-$(CONFIG_USE_SPARSE) += sparse
-tools-$(CONFIG_TARGET_apm821xx) += genext2fs
+tools-$(CONFIG_TARGET_apm821xx)$(CONFIG_TARGET_gemini) += genext2fs
 
 # builddir dependencies
 $(curdir)/bison/compile := $(curdir)/flex/compile
@@ -99,9 +99,10 @@ $(foreach tool, $(tools-y), $(eval $(curdir)/$(tool)/compile += $(patsubst %,$(c
 tools-y += $(tools-core)
 
 # make core tools depend on sed and flock
-$(foreach tool, $(tools-core), $(eval $(curdir)/$(tool)/compile += $(curdir)/sed/compile))
+$(foreach tool, $(filter-out xz,$(tools-core)), $(eval $(curdir)/$(tool)/compile += $(curdir)/sed/compile))
+$(curdir)/xz/compile += $(curdir)/flock/compile
 
-$(curdir)/sed/compile := $(curdir)/flock/compile
+$(curdir)/sed/compile := $(curdir)/flock/compile $(curdir)/xz/compile
 tools-y += flock sed
 
 $(curdir)/autoremove := 1
