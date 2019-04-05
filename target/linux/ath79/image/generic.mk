@@ -163,6 +163,23 @@ define Device/comfast_cf-e110n-v2
 endef
 TARGET_DEVICES += comfast_cf-e110n-v2
 
+define Device/comfast_cf-e120a-v3
+  ATH_SOC := ar9344
+  DEVICE_TITLE := COMFAST CF-E120A v3
+  DEVICE_PACKAGES := rssileds kmod-leds-gpio -uboot-envtools
+  IMAGE_SIZE := 8000k
+endef
+TARGET_DEVICES += comfast_cf-e120a-v3
+
+define Device/comfast_cf-e5
+  ATH_SOC := qca9531
+  DEVICE_TITLE := COMFAST CF-E5/E7
+  DEVICE_PACKAGES := rssileds kmod-leds-gpio kmod-usb-core kmod-usb2 kmod-usb-net \
+	kmod-usb-net-qmi-wwan -swconfig -uboot-envtools
+  IMAGE_SIZE := 16192k
+endef
+TARGET_DEVICES += comfast_cf-e5
+
 define Device/devolo_dvl1200e
   ATH_SOC := qca9558
   DEVICE_TITLE := devolo WiFi pro 1200e
@@ -279,6 +296,19 @@ define Device/embeddedwireless_dorin
 endef
 TARGET_DEVICES += embeddedwireless_dorin
 
+define Device/engenius_epg5000
+  ATH_SOC := qca9558
+  DEVICE_TITLE := EnGenius EPG5000
+  DEVICE_PACKAGES := ath10k-firmware-qca988x-ct kmod-ath10k-ct kmod-usb2
+  IMAGE_SIZE := 14656k
+  IMAGES += factory.dlf
+  IMAGE/factory.dlf := append-kernel | pad-to $$$$(BLOCKSIZE) | \
+	append-rootfs | pad-rootfs | check-size $$$$(IMAGE_SIZE) | \
+	senao-header -r 0x101 -p 0x71 -t 2
+  SUPPORTED_DEVICES += epg5000
+endef
+TARGET_DEVICES += engenius_epg5000
+
 define Device/engenius_ews511ap
   ATH_SOC := qca9531
   DEVICE_TITLE := EnGenius EWS511AP
@@ -305,12 +335,22 @@ define Device/glinet_gl-ar150
 endef
 TARGET_DEVICES += glinet_gl-ar150
 
-define Device/glinet_gl-ar300m-nor
+define Device/glinet_gl-ar300m-common-nor
   ATH_SOC := qca9531
-  DEVICE_TITLE := GL.iNet GL-AR300M
   DEVICE_PACKAGES := kmod-usb-core kmod-usb2
   IMAGE_SIZE := 16000k
   SUPPORTED_DEVICES += gl-ar300m
+endef
+
+define Device/glinet_gl-ar300m-lite
+  $(Device/glinet_gl-ar300m-common-nor)
+  DEVICE_TITLE := GL.iNet GL-AR300M-Lite
+endef
+TARGET_DEVICES += glinet_gl-ar300m-lite
+
+define Device/glinet_gl-ar300m-nor
+  $(Device/glinet_gl-ar300m-common-nor)
+  DEVICE_TITLE := GL.iNet GL-AR300M
 endef
 TARGET_DEVICES += glinet_gl-ar300m-nor
 
@@ -385,6 +425,26 @@ define Device/iodata_wn-ag300dgr
   DEVICE_PACKAGES := kmod-usb-core kmod-usb2
 endef
 TARGET_DEVICES += iodata_wn-ag300dgr
+
+define Device/jjplus_ja76pf2
+  ATH_SOC := ar7161
+  DEVICE_TITLE := jjPlus JA76PF2
+  DEVICE_PACKAGES += -kmod-ath9k -swconfig -wpad-mini -uboot-envtools fconfig
+  IMAGE/sysupgrade.bin := append-rootfs | pad-rootfs | combined-image | check-size $$$$(IMAGE_SIZE)
+#  IMAGE/sysupgrade.bin := append-rootfs | pad-rootfs | check-size $$$$(IMAGE_SIZE) | sysupgrade-tar rootfs=$$$$@ | append-metadata
+  KERNEL := kernel-bin | append-dtb | lzma | pad-to $$(BLOCKSIZE)
+  KERNEL_INITRAMFS := kernel-bin | append-dtb
+  IMAGE_SIZE := 16000k
+endef
+TARGET_DEVICES += jjplus_ja76pf2
+
+define Device/librerouter_librerouter-v1
+  ATH_SOC := qca9558
+  DEVICE_TITLE := LibreRouter v1
+  IMAGE_SIZE := 7936k
+  DEVICE_PACKAGES := kmod-usb-core kmod-usb2
+endef
+TARGET_DEVICES += librerouter_librerouter-v1
 
 define Device/nec_wg800hp
   ATH_SOC := qca9563
@@ -548,3 +608,11 @@ define Device/xiaomi_mi-router-4q
   IMAGE_SIZE := 14336k
 endef
 TARGET_DEVICES += xiaomi_mi-router-4q
+
+define Device/yuncore_a770
+  ATH_SOC := qca9531
+  DEVICE_TITLE := YunCore A770
+  DEVICE_PACKAGES := kmod-ath10k-ct ath10k-firmware-qca9887-ct
+  IMAGE_SIZE := 16000k
+endef
+TARGET_DEVICES += yuncore_a770
