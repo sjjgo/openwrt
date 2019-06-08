@@ -7,12 +7,22 @@ define KernelPackage/dvb-core
   TITLE:=DVB core support
   KCONFIG:= \
 	CONFIG_MEDIA_SUPPORT=y \
+	CONFIG_MEDIA_USB_SUPPORT=y \
 	CONFIG_MEDIA_DIGITAL_TV_SUPPORT=y \
 	CONFIG_DVB_NET=y \
+	CONFIG_DVB_USB_V2=y \
+	CONFIG_DVB_USB_DVBSKY=y \
 	CONFIG_DVB_MAX_ADAPTERS=2 \
 	CONFIG_DVB_PLATFORM_DRIVERS=n \
+	CONFIG_DVB_DEMUX_SECTION_LOSS_LOG=y \
 	CONFIG_MEDIA_TUNER_SIMPLE=n \
 	CONFIG_DVB_DYNAMIC_MINORS=n \
+	CONFIG_DVB_USB_ZD1301=n \
+	CONFIG_DVB_STV0910=n \
+	CONFIG_DVB_STV6111=n \
+	CONFIG_DVB_MXL5XX=n \
+	CONFIG_DVB_ZD1301_DEMOD=n \
+	CONFIG_MEDIA_TUNER_MSI001=n \
 	CONFIG_MEDIA_TUNER_TDA8290=n \
 	CONFIG_MEDIA_TUNER_TDA827X=n \
 	CONFIG_MEDIA_TUNER_TDA18271=n \
@@ -51,7 +61,7 @@ define KernelPackage/dvb-core
 	CONFIG_DVB_STV090x=n \
 	CONFIG_DVB_STV6110x=n \
 	CONFIG_DVB_M88DS3103=m \
-	CONFIG_DVB_TS2020=n \
+	CONFIG_DVB_TS2020=y \
 	CONFIG_DVB_DRXK=n \
 	CONFIG_DVB_TDA18271C2DD=n \
 	CONFIG_DVB_SI2165=n \
@@ -145,14 +155,25 @@ define KernelPackage/dvb-core
 	CONFIG_DVB_AF9033=n \
 	CONFIG_DVB_HORUS3A=n \
 	CONFIG_DVB_ASCOT2E=n \
-	CONFIG_DVB_DEMUX_SECTION_LOSS_LOG=n \
- 	CONFIG_DVB_STV0910=n \
- 	CONFIG_DVB_STV6111=n \
- 	CONFIG_DVB_MXL5XX=n \
- 	CONFIG_DVB_MN88472=n \
- 	CONFIG_DVB_MN88473=n \
- 	CONFIG_DVB_ZD1301_DEMOD=n \
- 	CONFIG_DVB_HELENE=n
+	CONFIG_DVB_MN88472=n \
+	CONFIG_DVB_MN88473=n \
+	CONFIG_DVB_HELENE=n \
+        CONFIG_VIDEO_AU0828=n \
+	CONFIG_DVB_USB_AF9015=n \
+	CONFIG_DVB_USB_AF9035=n \
+	CONFIG_DVB_USB_ANYSEE=n \
+	CONFIG_DVB_USB_AU6610=n \
+	CONFIG_DVB_USB_AZ6007=n \
+	CONFIG_DVB_USB_CE6230=n \
+	CONFIG_DVB_USB_EC168=n \
+	CONFIG_DVB_USB_GL861=n \
+	CONFIG_DVB_USB_MXL111SF=n \
+	CONFIG_DVB_USB_RTL28XXU=n \
+	CONFIG_DVB_TTUSB_BUDGET=n \
+	CONFIG_DVB_TTUSB_DEC=n \
+        CONFIG_SMS_USB_DRV=n \
+	CONFIG_DVB_B2C2_FLEXCOP_USB=n \
+	CONFIG_DVB_AS102=n
   FILES:=$(LINUX_DIR)/drivers/media/dvb-core/dvb-core.ko
 endef
 
@@ -173,12 +194,13 @@ define KernelPackage/dvb-usb-dvbsky
            CONFIG_DVB_USB_DVBSKY=y \
 	   CONFIG_I2C=y \
 	   CONFIG_I2C_MUX=y \
-	   CONFIG_I2C_REGMAP=y
-  DEPENDS:=@USB_SUPPORT +kmod-dvb-core +kmod-usb-core +kmod-i2c-core +kmod-i2c-mux +kmod-regmap
-  FILES:=$(LINUX_DIR)/drivers/media/dvb-frontends/ts2020.ko \
-	 $(LINUX_DIR)/drivers/media/dvb-frontends/m88ds3103.ko \
-	 $(LINUX_DIR)/drivers/media/usb/dvb-usb-v2/dvb-usb-dvbsky.ko \
-	 $(LINUX_DIR)/drivers/media/usb/dvb-usb-v2/dvb_usb_v2.ko
+	   CONFIG_I2C_REGMAP=y 
+  DEPENDS:=@USB_SUPPORT +kmod-dvb-core +kmod-usb-core +kmod-i2c-core +kmod-i2c-mux +kmod-regmap-i2c 
+  FILES:=\
+	$(LINUX_DIR)/drivers/media/dvb-frontends/ts2020.ko \
+	$(LINUX_DIR)/drivers/media/dvb-frontends/m88ds3103.ko \
+	$(LINUX_DIR)/drivers/media/usb/dvb-usb-v2/dvb-usb-dvbsky.ko \
+	$(LINUX_DIR)/drivers/media/usb/dvb-usb-v2/dvb_usb_v2.ko 
     AUTOLOAD:=$(call AutoLoad,80,ts2020 m88ds3103 dvb_usb_v2 dvb-usb-dvbsky)
 endef
 
@@ -187,3 +209,4 @@ define KernelPackage/dvb-usb-dvbsky/description
 endef
 
 $(eval $(call KernelPackage,dvb-usb-dvbsky))
+
