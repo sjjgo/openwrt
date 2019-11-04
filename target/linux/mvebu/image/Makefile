@@ -38,7 +38,7 @@ define Build/boot-img-ext4
 	$(foreach dts,$(DEVICE_DTS), $(CP) $(KDIR)/image-$(dts).dtb $@.boot/$(dts).dtb;)
 	$(CP) $(IMAGE_KERNEL) $@.boot/$(KERNEL_NAME)
 	-$(CP) $@-boot.scr $@.boot/boot.scr
-	make_ext4fs -J -l $(CONFIG_TARGET_KERNEL_PARTSIZE)M $@.bootimg $@.boot
+	make_ext4fs -J -L kernel -l $(CONFIG_TARGET_KERNEL_PARTSIZE)M $@.bootimg $@.boot
 endef
 
 define Build/sdcard-img
@@ -66,6 +66,15 @@ define Build/omnia-medkit-initramfs
 	$(TAR) -rp --numeric-owner --owner=0 --group=0 --sort=name \
 		$(if $(SOURCE_DATE_EPOCH),--mtime="@$(SOURCE_DATE_EPOCH)") \
 		--file=$@ -C $(dir $(IMAGE_KERNEL))boot/ .
+endef
+
+define Build/uDPU-firmware
+	(rm -fR $@-fw; mkdir -p $@-fw)
+	$(CP) $(BIN_DIR)/$(IMAGE_PREFIX)-initramfs.itb $@-fw/recovery.itb
+	$(CP) $@-boot.scr $@-fw/boot.scr
+	(cd $(TARGET_DIR); $(TAR) -cvzf $@-fw/rootfs.tgz .)
+	(cd $@.boot; $(TAR) -cvzf $@-fw/boot.tgz .)
+	(cd $@-fw; $(TAR) -cvzf $(KDIR_TMP)/$(IMAGE_PREFIX)-firmware.tgz .)
 endef
 
 define Device/Default
