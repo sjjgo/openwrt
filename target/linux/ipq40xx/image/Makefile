@@ -1,7 +1,8 @@
 include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/image.mk
 
-DEVICE_VARS += RAS_BOARD RAS_ROOTFS_SIZE RAS_VERSION
+DEVICE_VARS += RAS_BOARD RAS_ROOTFS_SIZE RAS_VERSION \
+	       WRGG_DEVNAME WRGG_SIGNATURE
 
 define Device/Default
 	PROFILES := Default
@@ -61,6 +62,15 @@ define Build/SenaoFW
 	@cp $@.new $@
 endef
 
+define Build/wrgg-image
+	mkwrggimg -i $@ \
+	-o $@.new \
+	-d "$(WRGG_DEVNAME)" \
+	-s "$(WRGG_SIGNATURE)" \
+	-v "" -m "" -B ""
+	mv $@.new $@
+endef
+
 define Device/8dev_jalapeno-common
 	$(call Device/FitImage)
 	$(call Device/UbiFit)
@@ -101,6 +111,16 @@ define Device/aruba_ap-303
 	IMAGES := sysupgrade.bin
 endef
 TARGET_DEVICES += aruba_ap-303
+
+define Device/aruba_ap-303h
+	$(call Device/FitImageLzma)
+	DEVICE_VENDOR := Aruba
+	DEVICE_MODEL := AP-303H
+	SOC := qcom-ipq4029
+	DEVICE_PACKAGES := ipq-wifi-aruba_ap-303
+	IMAGES := sysupgrade.bin
+endef
+TARGET_DEVICES += aruba_ap-303h
 
 define Device/asus_map-ac2200
 	$(call Device/FitImageLzma)
@@ -217,6 +237,33 @@ define Device/compex_wpj428
 endef
 TARGET_DEVICES += compex_wpj428
 
+define Device/dlink_dap-2610
+	$(call Device/FitImageLzma)
+	DEVICE_VENDOR := D-Link
+	DEVICE_MODEL := DAP-2610
+	SOC := qcom-ipq4018
+	DEVICE_DTS_CONFIG := config@ap.dk01.1-c1
+	BLOCKSIZE := 64k
+	WRGG_DEVNAME := /dev/mtdblock/8
+	WRGG_SIGNATURE := wapac30_dkbs_dap2610
+	IMAGE_SIZE := 14080k
+	IMAGES := sysupgrade.bin factory.bin
+	# Bootloader expects a special 160 byte header which is added by
+	# wrgg-image.
+	# Factory image size must be larger than 6MB, and size in wrgg header must
+	# match actual factory image size to be flashable from D-Link http server.
+	# Bootloader verifies checksum of wrgg image before booting, thus jffs2
+	# cannot be part of the wrgg image. This is solved in the factory image by
+	# having the rootfs at the end of the image (without pad-rootfs). And in
+	# the sysupgrade image only the kernel is included in the wrgg checksum,
+	# but this is not flashable from the D-link http server.
+	# append-rootfs must start on an erase block boundary.
+	IMAGE/factory.bin    := append-kernel | pad-offset 6144k 160 | append-rootfs | wrgg-image | check-size $$$$(IMAGE_SIZE)
+	IMAGE/sysupgrade.bin := append-kernel | wrgg-image | pad-to $$$$(BLOCKSIZE) | append-rootfs | pad-rootfs | check-size $$$$(IMAGE_SIZE) | append-metadata
+	DEVICE_PACKAGES := ipq-wifi-dlink_dap2610
+endef
+TARGET_DEVICES += dlink_dap-2610
+
 define Device/engenius_eap1300
 	$(call Device/FitImage)
 	DEVICE_VENDOR := EnGenius
@@ -230,6 +277,19 @@ define Device/engenius_eap1300
 	IMAGE/sysupgrade.bin := append-kernel | append-rootfs | pad-rootfs | append-metadata
 endef
 TARGET_DEVICES += engenius_eap1300
+
+define Device/engenius_emd1
+	$(call Device/FitImage)
+	DEVICE_VENDOR := EnGenius
+	DEVICE_MODEL := EMD1
+	DEVICE_DTS_CONFIG := config@4
+	SOC := qcom-ipq4018
+	IMAGE_SIZE := 30720k
+	IMAGES := sysupgrade.bin factory.bin
+	IMAGE/sysupgrade.bin := append-kernel | append-rootfs | pad-rootfs | append-metadata
+	IMAGE/factory.bin := qsdk-ipq-factory-nor | check-size $$$$(IMAGE_SIZE)
+endef
+TARGET_DEVICES += engenius_emd1
 
 define Device/engenius_ens620ext
 	$(call Device/FitImage)
@@ -256,6 +316,22 @@ define Device/engenius_ens620ext
 	IMAGE/factory_35.bin := qsdk-ipq-factory-nor | check-size $$$$(IMAGE_SIZE) | SenaoFW $$$$(PRODUCT_ID_NEW) $$$$(FW_VER_NEW)
 endef
 TARGET_DEVICES += engenius_ens620ext
+
+define Device/ezviz_cs-w3-wd1200g-eup
+	$(call Device/FitImage)
+	DEVICE_VENDOR := EZVIZ
+	DEVICE_MODEL := CS-W3-WD1200G
+	DEVICE_VARIANT := EUP
+	DEVICE_DTS_CONFIG := config@4
+	IMAGE_SIZE := 14848k
+	SOC := qcom-ipq4018
+	IMAGES := sysupgrade.bin
+	IMAGE/sysupgrade.bin := append-kernel | append-rootfs | pad-rootfs | \
+		append-metadata
+	DEVICE_PACKAGES := -kmod-ath10k-ct kmod-ath10k-ct-smallbuffers \
+		ipq-wifi-ezviz_cs-w3-wd1200g-eup
+endef
+TARGET_DEVICES += ezviz_cs-w3-wd1200g-eup
 
 define Device/glinet_gl-b1300
 	$(call Device/FitImage)
