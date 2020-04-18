@@ -229,6 +229,7 @@ endef
 TARGET_DEVICES += dlink_dir-860l-b1
 
 define Device/d-team_newifi-d2
+  $(Device/uimage-lzma-loader)
   IMAGE_SIZE := 32448k
   DEVICE_VENDOR := Newifi
   DEVICE_MODEL := D2
@@ -339,7 +340,7 @@ TARGET_DEVICES += gnubee_gb-pc2
 define Device/hiwifi_hc5962
   BLOCKSIZE := 128k
   PAGESIZE := 2048
-  KERNEL_SIZE := 2097152
+  KERNEL_SIZE := 4096k
   UBINIZE_OPTS := -E 5
   IMAGE_SIZE := 32768k
   IMAGES += factory.bin
@@ -349,9 +350,6 @@ define Device/hiwifi_hc5962
   DEVICE_VENDOR := HiWiFi
   DEVICE_MODEL := HC5962
   DEVICE_PACKAGES := kmod-mt7603 kmod-mt76x2 kmod-usb3 wpad-basic
-  SUPPORTED_DEVICES += hc5962
-  # Kernel partition too small
-  DEFAULT := n
 endef
 TARGET_DEVICES += hiwifi_hc5962
 
@@ -380,6 +378,22 @@ define Device/iodata_wn-ax1167gr2
   DEVICE_PACKAGES := kmod-mt7615e wpad-basic
 endef
 TARGET_DEVICES += iodata_wn-ax1167gr2
+
+define Device/iodata_wn-ax2033gr
+  BLOCKSIZE := 128k
+  PAGESIZE := 2048
+  UBINIZE_OPTS := -E 5
+  UIMAGE_MAGIC := 0x434f4d42
+  KERNEL_SIZE := 4096k
+  IMAGE_SIZE := 51200k
+  DEVICE_VENDOR := I-O DATA
+  DEVICE_MODEL := WN-AX2033GR
+  KERNEL_INITRAMFS := $(KERNEL_DTB) | custom-initramfs-uimage 3.10(VST.1)C10 | \
+	iodata-mstc-header
+  IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+  DEVICE_PACKAGES := kmod-mt7603 kmod-mt7615e wpad-basic
+endef
+TARGET_DEVICES += iodata_wn-ax2033gr
 
 define Device/iodata_wn-dx1167r
   BLOCKSIZE := 128k
@@ -447,6 +461,7 @@ endef
 TARGET_DEVICES += jcg_jhr-ac876m
 
 define Device/lenovo_newifi-d1
+  $(Device/uimage-lzma-loader)
   IMAGE_SIZE := 32448k
   DEVICE_VENDOR := Newifi
   DEVICE_MODEL := D1
@@ -488,7 +503,6 @@ define Device/MikroTik
   IMAGE_SIZE := 16128k
   DEVICE_PACKAGES := kmod-usb3
   LOADER_TYPE := elf
-  PLATFORM := mt7621
   KERNEL := $(KERNEL_DTB) | loader-kernel
   IMAGE/sysupgrade.bin := append-kernel | kernel2minor -s 1024 | \
 	pad-to $$$$(BLOCKSIZE) | append-rootfs | pad-rootfs | append-metadata | \
@@ -550,6 +564,7 @@ endef
 TARGET_DEVICES += netgear_ex6150
 
 define Device/netgear_sercomm_nand
+  $(Device/uimage-lzma-loader)
   BLOCKSIZE := 128k
   PAGESIZE := 2048
   KERNEL_SIZE := 4096k
@@ -643,6 +658,7 @@ endef
 TARGET_DEVICES += netgear_r6850
 
 define Device/netgear_wndr3700-v5
+  $(Device/uimage-lzma-loader)
   BLOCKSIZE := 64k
   IMAGE_SIZE := 15232k
   SERCOMM_HWID := AYB
@@ -732,6 +748,7 @@ endef
 TARGET_DEVICES += telco-electronics_x1
 
 define Device/thunder_timecloud
+  $(Device/uimage-lzma-loader)
   IMAGE_SIZE := 16064k
   DEVICE_VENDOR := Thunder
   DEVICE_MODEL := Timecloud
@@ -778,27 +795,31 @@ define Device/tplink_re650-v1
 endef
 TARGET_DEVICES += tplink_re650-v1
 
-define Device/ubiquiti_edgerouterx
+define Device/ubnt_edgerouter_common
+  $(Device/uimage-lzma-loader)
+  DEVICE_VENDOR := Ubiquiti
   IMAGE_SIZE := 256768k
   FILESYSTEMS := squashfs
   KERNEL_SIZE := 3145728
   KERNEL_INITRAMFS := $$(KERNEL) | \
 	ubnt-erx-factory-image $(KDIR)/tmp/$$(KERNEL_INITRAMFS_PREFIX)-factory.tar
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
-  DEVICE_VENDOR := Ubiquiti
-  DEVICE_MODEL := EdgeRouter X
-  SUPPORTED_DEVICES += ubnt-erx
 endef
-TARGET_DEVICES += ubiquiti_edgerouterx
 
-define Device/ubiquiti_edgerouterx-sfp
-  $(Device/ubiquiti_edgerouterx)
-  DEVICE_VENDOR := Ubiquiti
-  DEVICE_MODEL := EdgeRouter X-SFP
-  DEVICE_PACKAGES += kmod-i2c-algo-pca kmod-gpio-pca953x
-  SUPPORTED_DEVICES += ubnt-erx-sfp
+define Device/ubnt_edgerouter-x
+  $(Device/ubnt_edgerouter_common)
+  DEVICE_MODEL := EdgeRouter X
+  SUPPORTED_DEVICES += ubnt-erx ubiquiti,edgerouterx
 endef
-TARGET_DEVICES += ubiquiti_edgerouterx-sfp
+TARGET_DEVICES += ubnt_edgerouter-x
+
+define Device/ubnt_edgerouter-x-sfp
+  $(Device/ubnt_edgerouter_common)
+  DEVICE_MODEL := EdgeRouter X SFP
+  DEVICE_PACKAGES += kmod-i2c-algo-pca kmod-gpio-pca953x
+  SUPPORTED_DEVICES += ubnt-erx-sfp ubiquiti,edgerouterx-sfp
+endef
+TARGET_DEVICES += ubnt_edgerouter-x-sfp
 
 define Device/ubnt_unifi-nanohd
   DEVICE_VENDOR := Ubiquiti
@@ -852,6 +873,7 @@ endef
 TARGET_DEVICES += wevo_w2914ns-v2
 
 define Device/xiaomi_mir3g
+  $(Device/uimage-lzma-loader)
   BLOCKSIZE := 128k
   PAGESIZE := 2048
   KERNEL_SIZE := 4096k
@@ -871,6 +893,7 @@ endef
 TARGET_DEVICES += xiaomi_mir3g
 
 define Device/xiaomi_mir3g-v2
+  $(Device/uimage-lzma-loader)
   IMAGE_SIZE := 14848k
   DEVICE_VENDOR := Xiaomi
   DEVICE_MODEL := Mi Router 3G
@@ -883,6 +906,7 @@ endef
 TARGET_DEVICES += xiaomi_mir3g-v2
 
 define Device/xiaomi_mir3p
+  $(Device/uimage-lzma-loader)
   BLOCKSIZE := 128k
   PAGESIZE := 2048
   KERNEL_SIZE:= 4096k
